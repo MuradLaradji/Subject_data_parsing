@@ -43,7 +43,8 @@ for filename in os.listdir("C:\\Users\\murad\\PycharmProjects\\Subject_data_pars
 
 file.close()
 
-Subject_Data = pd.DataFrame(list(map(list, zip(filename, inactive_licks, active_licks))))
+Subject_Data = pd.DataFrame(list(map(list, zip(filenames, inactive_licks, active_licks))))
+Subject_Data.columns=['Subject Name', 'Number of Inactive Licks', 'Active Licks']
 
 print(Subject_Data)
 
