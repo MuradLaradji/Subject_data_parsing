@@ -2,4 +2,6 @@
 
 Project by Murad Laradji
 
-Goal: convert 
+Assistance provided by Nilai Vemula
+
+Goal: tidy files
