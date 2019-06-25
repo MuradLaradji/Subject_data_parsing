@@ -37,13 +37,6 @@ for filename in os.listdir("C:\\Users\\murad\\PycharmProjects\\Subject_data_pars
                 int1 = m.group(1)
 
             inactive_licks.append(int1)
-#loop to average subject groups and set to new variables
-
-1f001q = []
-
-for
-
-
 
 
 
@@ -55,10 +48,15 @@ Subject_Data.columns=['Subject Name', 'Number of Inactive Licks', 'Active Licks'
 
 print(Subject_Data)
 
-Subject_Data.to_csv(r'C:\\Users\\murad\\Documents\\R-data-ws\\Lab_Data\\export_dataframe1.csv')
-
 print(filenames)
 print(active_licks)
 print(inactive_licks)
 
 
+# combine your variables into a pandas data frame
+# make sure data is tidy
+
+
+# write your data frame to a csv
+
+# import your csv into r

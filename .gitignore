@@ -105,3 +105,8 @@ venv.bak/
 
 # pycharm
 /.idea
+
+# R
+.Rproj
+.Rdata
+.Rhistory
