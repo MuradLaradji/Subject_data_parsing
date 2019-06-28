@@ -5,7 +5,9 @@ import re
 import numpy as np
 import pandas as pd
 
+# ce is the "collecting E" variable, which either allows or prevents the collection of data at specific points.
 ce = 0
+
 # working directory
 os.chdir(sys.path[0])  # sys.path[0] returns the location of the script
 data_location = "taste_data/"
@@ -55,6 +57,7 @@ for filename in os.listdir(os.getcwd()):  # for all files in the current working
 
     file.close()
 
+# writes the strings to a new csv document
 with open('C:\\Users\\murad\\PycharmProjects\\Subject_data_parsing\\venv\\export_data1.csv', 'w+') as out:
     out.write(str(active_licks))
     out.write(str(inactive_licks))
