@@ -1,6 +1,13 @@
 import os
+import sys
 import re
 import pandas as pd
+
+# working directory
+os.chdir(sys.path[0])  # sys.path[0] returns the location of the script
+data_location = "taste_data/"
+os.chdir(data_location)  # set working directory to where the data is
+
 
 # initialize all data containers
 filenames = []
@@ -8,11 +15,11 @@ active_licks = []
 inactive_licks = []
 
 # looping program to find and list important data
-for filename in os.listdir("C:\\Users\\murad\\PycharmProjects\\Subject_data_parsing\\taste_data"):
+for filename in os.listdir(os.getcwd()):  # for all files in the current working directory
     filenames.append(filename)
     file = open(filename, 'rt')
 
-    x = file.readlines()
+    x = file.readlines()  # x is a list where each element is a line in the file
     for line in x:
         if line.startswith("A:"):
 
@@ -43,6 +50,7 @@ for filename in os.listdir("C:\\Users\\murad\\PycharmProjects\\Subject_data_pars
 
 file.close()
 
+# combine your variables into a pandas data frame
 Subject_Data = pd.DataFrame(list(map(list, zip(filenames, inactive_licks, active_licks))))
 Subject_Data.columns=['Subject Name', 'Number of Inactive Licks', 'Active Licks']
 
@@ -52,8 +60,6 @@ print(filenames)
 print(active_licks)
 print(inactive_licks)
 
-
-# combine your variables into a pandas data frame
 # make sure data is tidy
 
 
