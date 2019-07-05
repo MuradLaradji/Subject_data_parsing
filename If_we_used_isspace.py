@@ -22,7 +22,7 @@ for filename in os.listdir(os.getcwd()):  # for all files in the current working
     x = file.readlines()  # x is a list where each element is a line in the file
     for line in x:
 
-        box = str()
+        box = int()
         subject = str()
 
         if line.startswith('Box:'):
@@ -35,7 +35,7 @@ for filename in os.listdir(os.getcwd()):  # for all files in the current working
                 t_box = m.group(1)
                 if t_box.isspace() is False:
                     print(t_box)
-                    box = str(t_box)
+                    box = str(line)
         if line.startswith('Subject:'):
             re1 = '.*?'  # Non-greedy match on filler
             re2 = '(?:[a-z][a-z0-9_]*)'  # Uninteresting: var
@@ -49,10 +49,13 @@ for filename in os.listdir(os.getcwd()):  # for all files in the current working
                 if t_subject.isspace() is False:
                     # print(t_subject)
                     subject = str(t_subject)
-            t_uid = (box, subject)
-            print(t_uid)
-                #uid.append(t_uid)
-                #print(uid)
+
+        t_uid = (box, subject)
+        print(t_uid)
+        uid.append(t_uid)
+
+
+print(uid)
 
 
 
