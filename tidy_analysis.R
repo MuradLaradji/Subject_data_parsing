@@ -1,28 +1,44 @@
 library(stats)
+library(dplyr)
 
-setwd('C:\\Users\\murad\\PycharmProjects\\Subject_data_parsing\\taste_data') # setting working directory
+# the results will have the following structure
+# UID, ratID, spout, cluster_cnt, cluster_size, inter_lick_interval, threshold, ....
 
-active_data_files <- list.files(pattern = '_active.csv')  # finding all files for active lick data
-inactive_data_files <- list.files(pattern = '_inactive.csv')  #finding all files for inactive lick data
 
-# This script collects the uid data for each subject
-uid_data <- c(read.csv('uid_data.csv',header = FALSE, na.strings =c("","NA")))
-uid_data <- as.vector(uid_data)
-uid_data <- replace(uid_data, uid_data == '___', "NA")
+setwd('C:\\Users\\murad\\PycharmProjects\\Subject_data_parsing') # setting working directory
+
+#Importing data from output.txt 
+data <- read.csv('output.csv', sep = '\t', header = F, na.strings =c("","NA"), col.names = c('UID','Rat ID','Spout','Lick Time'))
 
 # These are all the data that is being gathered to be manipulated. They are initialized here and added to later.
 active_clusters <- list()
 inactive_clusters <- list()
 avg_act_cluster_size <- list()
 avg_inact_cluster_size <- list()
-global_threshold <- list()
-lick_interval <- list()
+global_threshold <- 0.5
+act_lick_interval <- list()
+inact_lick_interval <- list()
 
-# This script defines the function that will count the number of clusters
+
+new_data<- data %>% select(UID, Spout, Lick.Time) %>% 
+group_by(UID, Spout) %>% 
+mutate(paste(as.character(Lick.Time), collapse=",")) %>% 
+select(-Lick.Time) %>% distinct()
+
+
+
+u#Function to assign a number to each lick
+lick.label <- function(x){
+  y<-stack(setNames(x, seq_along(x)))
+  y <- as.vector(y$ind)
+  return(y)
+}
+
+li# This script defines the function that will count the number of clusters
 cluster.count <- function(x, threshold){
     x=x+0.5  
   
-    x1 = c(x,10^10) # adding 10 to the end of x, so that x2 can be subtracted from it 
+    x1 = c(x,threshold,10^10) # adding 10 to the end of x, so that x2 can be subtracted from it 
     x2 = c(0,x) # adding 0 to the beginning of x, so that x1 can be subtracted from x1
     
     x1 = as.numeric(as.character(unlist(x1))) #converting x1 into a vector
@@ -36,17 +52,16 @@ cluster.count <- function(x, threshold){
     result3 = result1 - result2
     
     result3 = c(result3[-(length(result3))])
-    #print(result3)
     
     result3 = replace(result3,result3 == -1, 2)
     result3 = replace(result3,result3 ==1, -1)
     
-    #print(result3)
-    
-    
     number_of_clusters = sum(result3)
     
-    #print(number_of_clusters)
+    if (is.na(number_of_clusters)){
+      number_of_clusters= 0
+}
+    
     return(number_of_clusters)
 }
 
@@ -62,6 +77,10 @@ interlick.interval= function(x){
   result2 = result1[1:length(result1)-1]
   mean.result = mean(as.numeric(result2)) #check values that are less than the threshold
   
+  if (is.na(mean.result)){
+    mean.result = 0
+  }
+  
   return(mean.result)
 }
   
@@ -76,7 +95,7 @@ cluster.size = function(x,threshold){
   x2 = as.numeric(as.character(unlist(x2))) #converting x2 into a vector
   
   result1 = (x1-x2) 
-  result1 = as.numeric(result1 < 0.4)  #check values that are less than the threshold
+  result1 = as.numeric(result1 < 0.5)  #check values that are less than the threshold
   
   result2 = c(result1[-1], 10)
   
@@ -86,71 +105,36 @@ cluster.size = function(x,threshold){
   
   result5 = replace(result3,result3 == -1,2)
   result5 = replace(result5,result5 ==1, -1)
-  
-  print(result5)
     
   bc=which(result5==2)
   ec=which(result5==-1)
   
-  z=cluster.count(x,0.4)
+  z=cluster.count(x,0.5)
   
   bc = as.vector(unlist(bc))
   ec = as.vector(unlist(ec))
- 
+  
  lbc = length(bc)
  lec = length(ec)
- print(length(bc))
- print(length(ec))
+
   
   if (lbc != lec){
     
   print("THIS FILE IS ABNORMAL", col = "blue")
   }
  
- print(fileName)
-  
- 
  z = as.numeric(z)
   
   cluster_sizes= ec-bc+z
   cluster_size_mean=mean(cluster_sizes)
   
-  return(cluster_size_mean)
+  if (is.na(cluster_size_mean)){
+    cluster_size_mean = 0
+  }
+  
+    return(cluster_size_mean)
 }
 
-# This is the looping script for the inactive data. It gathers important data from each file and adds it to the initialized lists.
-for (fileName in active_data_files){  
-  active_data <- read.csv(fileName,    
-                          header = FALSE, 
-                          col.names = c(1:(length(file)))
-                          )
-  y <- cluster.count(active_data,threshold= 0.4)
-  active_clusters <- c(active_clusters, y)
-  
-  x <- cluster.size(active_data,threshold= 0.4)
-  avg_act_cluster_size <- c(avg_act_cluster_size,x)
-  
-  global_threshold <- c(global_threshold,0.4)
-  
-  z <- interlick.interval(active_data)
-  lick_interval <- c(lick_interval,z)
-}
-
-# This is the looping script for the inactive data. It gathers important data from each file and adds it to the initialized lists.
-for (fileName in inactive_data_files){  
-   inactive_data <- read.csv(fileName,  
-                             header = FALSE, 
-                             col.names = c(1:(length(file)))
-                             )
-  y <- cluster.count(inactive_data,threshold= 0.4)
-  inactive_clusters = c(inactive_clusters, y)
-  
-  x <- cluster.size(inactive_data,threshold= 0.4)
-  avg_inact_cluster_size <- c(avg_inact_cluster_size, x)
- 
-  z <- interlick.interval(inactive_data)
-  lick_interval <- c(lick_interval,z)
-}
 
 # I am unlisting every list that was initialized here. This is necessary because of some issues with the mathematical processes. 
 active_clusters = unlist(active_clusters)
@@ -159,30 +143,45 @@ uid_data <- unlist(uid_data)
 avg_act_cluster_size <- unlist(avg_act_cluster_size)
 avg_inact_cluster_size <- unlist(avg_inact_cluster_size)
 threshold <- unlist(global_threshold)
-lick_interval <- unlist(lick_interval)
+act_lick_interval <- unlist(act_lick_interval)
+inact_lick_interval <- unlist(inact_lick_interval)
+
 
 # This defines the ultimate dataframe that will encompass all the data gathered and compiled. 
-df <- data.frame(uid_data,
-                active_clusters,
-                avg_act_cluster_size,
-                inactive_clusters,
-                avg_inact_cluster_size,
-                threshold,
-                lick_interval
-                )
 
 colnames(df) <-c("UID",
-                 "Active Lick Clusters",
-                 "Mean Active Cluster Size",
-                 "Number of Inactive Lick Clusters",
-                 "Mean Inactive Lick Cluster Size",
+                 "Rat ID",
+                 "Lick Times",
+                 "Active or Inactive",
                  "Time Threshold for Lick Cluster",
-                 "Mean Interlick Interval"
-)
+                 "Number of Lick Clusters",
+                 "Mean Lick Cluster Size",
+                 "Mean  Interlick Interval"
+                  )
 
+plot.with.errorbars <- function(x, y, err, ylim=NULL, ...) {
+  if (is.null(ylim))
+    ylim <- c(min(y-err), max(y+err))
+  plot(x, y, ylim=ylim, pch=19, ...)
+  arrows(x, y-err, x, y+err, length=0.05, angle=90, code=3)
+}
 
+x = active_clusters
+xmax = max(active_clusters)
 
+y = avg_act_cluster_size
+ymax = max(avg_act_cluster_size)
+ylog= 50
+ysdev = sd(y)
 
+length(ysdev)
+
+barplot(x, ylab="Avg Active Cluster Size", xlab="Number of Active Clusters", main="Number of Active Clusters vs. Mean Active Cluster Size", ylim=c(1, ymax), pch=19, xlim=c(1,xmax),cex.axis=1,col="blue", cex=1.5, cex.main=1.5)
+arrows(xy,x,y+ylog,length=0.05,angle = 90, code=3)              
+              
+
+# Plotting all variables against one another to find correlations
+plot(df0)
 
 
 
